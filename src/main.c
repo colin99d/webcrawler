@@ -6,7 +6,7 @@
 #include "_strings.h"
 
 
-void find_all(char *string, char sub[10]) {
+void find_all(char *string, char sub[10], struct URL * urls, int * total_urls) {
 	int i;
 	char *sub_str;
 	char *found;
@@ -18,10 +18,12 @@ void find_all(char *string, char sub[10]) {
 			end = find_next(string, '"', i+6);
 			found = substr(string, i+6, end);
 			printf("%s\n", found);
+			strcpy(urls[*total_urls].url, found);
+			urls[*total_urls].scanned = 0;
+			(*total_urls)++;
 		}
 	}
 }
-
 
 
 int main() {
@@ -37,10 +39,9 @@ int main() {
 		first_url.scanned = 0;
 		all_urls[total_urls] = first_url;
 		total_urls++;
-		printf("Added url\n");
 	}
 	html = get_url(all_urls[0].url);
-	// find_all(html->memory, "href=");
+	find_all(html->memory, "href=", all_urls, &total_urls);
 	// free(html);
 	write_file(total_urls, all_urls);
 	printf("Total URLS at end: %i\n", total_urls);
