@@ -30,6 +30,7 @@ void read_file(int *url_count, struct URL *urls) {
 			urls[i].scanned = input.scanned;
 			strcpy(urls[i].url, input.url);
 			(*url_count)++;
+			i++;
 		}
 	}
 	fclose(infile);
