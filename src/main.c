@@ -6,9 +6,13 @@
 #include "_files.h"
 #include "_strings.h"
 #include "_prints.h"
+#include "_sqlite.h"
 
 /*
 TODO: Make the url save more memory efficient (don't default to 2048 characters)
+TODO: Swtich from .dat to sqlite
+TODO: increase the amount of information stored (linked list?)
+TODO: take arguments for starting url
 */ 
 static volatile int keepRunning = 1;
 

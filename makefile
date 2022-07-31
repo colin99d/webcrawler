@@ -24,7 +24,7 @@ clean:
 .PHONY: build clean
 
 $(EXECUTABLE_FILES): $(OBJECT_FILES)
-		@$(CC) $(LDFLAGS) -o $@ $^ -lcurl
+		@$(CC) $(LDFLAGS) -o $@ $^ -lcurl -lsqlite3
 		@# ^^^ http://www.gnu.org/software/make/manual/make.html#Automatic-Variables
 
 # http://www.gnu.org/software/make/manual/make.html#Static-Pattern

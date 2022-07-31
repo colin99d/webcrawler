@@ -30,3 +30,17 @@ int find_next(char *string, char target1, char target2, int start) {
 	}
 	return -1;
 }
+
+
+// This is unused, saving for the future
+
+
+char in_array(char ** array, char * string) {
+	while(*array != 0) {
+		if (strcmp(*array, string)==0) {
+			return 1;
+		}
+		array++;
+	}
+	return 0;
+}
