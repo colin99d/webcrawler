@@ -18,6 +18,7 @@ char* substr(const char *src, int m, int n) {
 	return dest - len;
 }
 
+
 int find_next(char *string, char target1, char target2, int start) {
 	while(start < strlen(string)){
 		if(string[start] == target1) {
@@ -30,9 +31,6 @@ int find_next(char *string, char target1, char target2, int start) {
 	}
 	return -1;
 }
-
-
-// This is unused, saving for the future
 
 
 char in_array(char ** array, char * string) {

@@ -3,12 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "_sqlite.h"
-
 /* 
 TODO: change hardcoded lengths to the defines
 */
 
+struct URL {
+	int id;
+	char address[2048];
+	int scanned;
+};
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
 	int i;
@@ -92,7 +95,38 @@ int update_url(sqlite3 * db, char *zErrMsg, char *url) {
 		
 }
 
+int retrieve_urls(sqlite3 * db, char *zErrMsg, struct URL * purl) {
+	sqlite3_stmt * statement;
+	char query[] =  "SELECT id, address, scanned FROM url;";
+	int response;
+	int i = 1;
+
+		printf("------1------\n");
+	response = sqlite3_prepare_v2(db, query, strlen(query), &statement, NULL);
+	if(response != SQLITE_OK) {
+		sqlite3_close(db);
+		printf("Can't retrieve data: %s\n", sqlite3_errmsg(db));
+		return 0;
+	}
+	while (sqlite3_step(statement) == SQLITE_ROW) {	
+		printf("------2------\n");
+		purl->id = sqlite3_column_int(statement, 0);
+		printf("------3------\n");
+		strcpy(purl->address,  (char*)sqlite3_column_text(statement, 1));
+		printf("------4------\n");
+		purl->scanned = sqlite3_column_int(statement, 2);
+		printf("------5------\n");
+		purl++;
+		i++;
+	}
+	return 1;
+}
+
 int main(void) {
+	printf("------0.7------\n");
+	struct URL urls[1000];
+	printf("%lu\n", sizeof(urls));
+	printf("------0.8------\n");
 	sqlite3 *db;
 	char *zErrMsg = 0;
 	int response;
@@ -112,6 +146,9 @@ int main(void) {
 	response = add_url(db, zErrMsg, "https://en.wikipedia.org/wiki/Main_Page", 1);
 
 	response = update_url(db, zErrMsg, "https://en.wikipedia.org/wiki/Main_Page");
+
+	printf("------0.9------\n");
+	response = retrieve_urls(db, zErrMsg, urls);
 
 	response = sqlite3_close_v2(db);
 	return 0;

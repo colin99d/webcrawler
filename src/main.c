@@ -14,6 +14,7 @@ TODO: Swtich from .dat to sqlite
 TODO: increase the amount of information stored (linked list?)
 TODO: take arguments for starting url
 */ 
+
 static volatile int keepRunning = 1;
 
 int is_duplicate(struct URL * urls, int total_urls, char *string) {
