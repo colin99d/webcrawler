@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
-struct MemoryStruct {
+typedef struct memorystruct {
 	char *memory;
 	size_t size;
-};
+} MemoryStruct;
 
-struct MemoryStruct * get_url(char url[1000]); 
+MemoryStruct * get_url(char url[1000]); 

@@ -6,12 +6,8 @@
 /* 
 TODO: change hardcoded lengths to the defines
 */
+#include "_sqlite.h"
 
-typedef struct url {
-	int id;
-	char *address;
-	int scanned;
-} URL;
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName){
 	int i;
@@ -117,38 +113,4 @@ int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
 		i++;
 	}
 	return i;
-}
-
-int main(void) {
-	URL *urls = malloc(sizeof(URL));
-	sqlite3 *db;
-	char *zErrMsg = 0;
-	int response;
-	int val_length;
-	int i;
-
-	response = sqlite3_open_v2("urls.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "unix");
-
-	if(response) {
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		sqlite3_close_v2(db);
-	}
-
-	response = create_table(db, zErrMsg);
-	if(response!=SQLITE_OK){
-		fprintf(stderr, "SQL error: %s\n", zErrMsg);
-		sqlite3_free(zErrMsg);
-	}
-	response = add_url(db, zErrMsg, "https://en.wikipedia.org/wiki/Main_Page", 1);
-
-	response = update_url(db, zErrMsg, "https://en.wikipedia.org/wiki/Main_Page");
-
-	val_length = retrieve_urls(db, zErrMsg, urls);
-
-	for (i = 0; i < val_length; i++) {
-		printf("%s\n", urls[i].address);
-	}
-
-	response = sqlite3_close_v2(db);
-	return 0;
 }

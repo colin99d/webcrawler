@@ -9,7 +9,7 @@
 
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
 	  size_t realsize = size * nmemb;
-	    struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+	    MemoryStruct *mem = (MemoryStruct *)userp;
 
 	      char *ptr = realloc(mem->memory, mem->size + realsize + 1);
 	        if(!ptr) {
@@ -27,13 +27,13 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 
-struct MemoryStruct * get_url(char url[1000]) {
+MemoryStruct * get_url(char url[1000]) {
 
 	CURL *curl;
 	CURLcode res;
 
-	struct MemoryStruct * chunk;
-	chunk = malloc(sizeof(struct MemoryStruct));
+	MemoryStruct * chunk;
+	chunk = malloc(sizeof(MemoryStruct));
 	chunk->memory = malloc(1);
 	chunk->size = 0;
 
