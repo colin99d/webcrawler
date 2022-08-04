@@ -114,6 +114,7 @@ int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
 		purl[i].address = malloc(sizeof(char) * (strlen(temp_address) + 1));
 		strcpy(purl[i].address, temp_address);
 		purl[i].scanned = sqlite3_column_int(statement, 2);
+		i++;
 	}
 	return i;
 }
@@ -123,6 +124,8 @@ int main(void) {
 	sqlite3 *db;
 	char *zErrMsg = 0;
 	int response;
+	int val_length;
+	int i;
 
 	response = sqlite3_open_v2("urls.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "unix");
 
@@ -140,7 +143,11 @@ int main(void) {
 
 	response = update_url(db, zErrMsg, "https://en.wikipedia.org/wiki/Main_Page");
 
-	response = retrieve_urls(db, zErrMsg, urls);
+	val_length = retrieve_urls(db, zErrMsg, urls);
+
+	for (i = 0; i < val_length; i++) {
+		printf("%s\n", urls[i].address);
+	}
 
 	response = sqlite3_close_v2(db);
 	return 0;
