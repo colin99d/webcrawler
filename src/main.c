@@ -123,7 +123,7 @@ int main() {
 			results_number = find_all(html->memory, "href=", all_results);
 			printf("-----2-----\n");
 			for (i = 0; i < results_number; i++) {
-				green(all_results[i].address);
+				printf("%s\n", all_results[i].address);
 			}
 			/*
 			for (i = 0; i < results_number; i++) {
