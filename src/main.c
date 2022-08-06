@@ -84,11 +84,6 @@ void intHandler(int dummy) {
 void getData(sqlite3 *db, char *zErrMsg, URL *all_urls, int *total_urls) {
 	int response;
 	int i;
-	response = sqlite3_open_v2("urls.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "unix");
-	if(response) {
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		sqlite3_close_v2(db);
-	}
 	response = create_table(db, zErrMsg);
 	if(response!=SQLITE_OK){
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -115,12 +110,36 @@ int main() {
 	URL *all_urls = malloc(sizeof(URL));
 	Result *all_results = malloc(sizeof(Result));
 	int results_number;
+	int response;
 	char *zErrMsg = 0;
 	int total_urls;
 	int i;
 
 	signal(SIGINT, intHandler);
-	getData(db, zErrMsg, all_urls, &total_urls);
+	response = sqlite3_open_v2("urls.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "unix");
+	if(response) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		sqlite3_close_v2(db);
+	}
+	response = create_table(db, zErrMsg);
+	if(response!=SQLITE_OK){
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+
+	(total_urls) = retrieve_urls(db, zErrMsg, all_urls);
+	for (i = 0; i < total_urls; i++) {
+		printf("%s\n", all_urls[i].address);
+	}
+	printf("Total URLS at start: %i\n", total_urls);
+	if(total_urls == 0) {
+		all_urls[0].address = malloc(sizeof(char) * 25);
+		strcpy(all_urls[0].address, "https://www.example.com");
+		all_urls[0].scanned = 0;
+		add_url(db, zErrMsg, all_urls[0].address, 1);
+		total_urls++;
+	}
+	// getData(db, zErrMsg, all_urls, &total_urls);
 
 	for(i = 0; i < total_urls; i++){
 		if (keepRunning == 0) {
@@ -139,8 +158,11 @@ int main() {
 			}
 			printf("--------5--------\n");
 			all_urls[i].scanned = 1;
+			printf("--------6--------\n");
 			green(all_urls[i].address);
+			printf("--------7--------\n");
 			free(html);
+			printf("--------8--------\n");
 			printf("URLs found: %i\tURLs scanned: %i\n", total_urls, i);
 		}
 	}
