@@ -1,5 +1,5 @@
 # Compiler options
-CC=gcc
+CC=clang
 CFLAGS=-c -Wall
 LDFLAGS=
 EXECUTABLE_NAME=scraper
@@ -24,7 +24,7 @@ clean:
 .PHONY: build clean
 
 $(EXECUTABLE_FILES): $(OBJECT_FILES)
-		@$(CC) $(LDFLAGS) -o $@ $^ -lcurl -lsqlite3
+		@$(CC) $(LDFLAGS) -o $@ $^ -lcurl -lsqlite3 -g
 		@# ^^^ http://www.gnu.org/software/make/manual/make.html#Automatic-Variables
 
 # http://www.gnu.org/software/make/manual/make.html#Static-Pattern

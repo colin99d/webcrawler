@@ -12,67 +12,60 @@ TODO: Make the url save more memory efficient (don't default to 2048 characters)
 TODO: Swtich from .dat to sqlite
 TODO: increase the amount of information stored (linked list?)
 TODO: take arguments for starting url
+TODO: add logs
 */ 
 
 static volatile int keepRunning = 1;
 
-typedef struct result {
-	char *address;
-	char *parent;
-} Result;
 
-int find_all(char *string, char *sub, Result *all_results) {
-	int i = 0;
-	int j = 0;
+int is_duplicate(URL * urls, int total_urls, char *string) {
+		int i;
+
+			for(i = 0; i < total_urls; i++) {
+
+						if(strcmp(string, urls[i].address) == 0) {
+										return 1;
+												}
+							}
+				return 0;
+}
+
+void find_all(char *string, char sub[10], URL * urls, int * total_urls, sqlite3 *db, char *zErrMsg) {
+	int i;
 	char *sub_str;
-	char found[2048];
+	char *found;
 	int end;
 	int str_len;
+
 
 	str_len = strlen(string);
 	for(i = 0; i < str_len; i++) {
 		if (str_len >= i + 10) {
 		sub_str = substr(string, i, i+5);
 			if(strcmp(sub_str, sub) == 0) {
-				printf("--------3.1--------\n");
 				end = find_next(string, '"', '\'', i+6);
 				if (end == -1) {
 					continue;
 				}
-				strcpy(found, substr(string, i+6, end));
-				printf("--------3.2--------\n");
+				found = substr(string, i+6, end);
 				sub_str = substr(string, i+6, i+10)	;
-				printf("%s\n", sub_str);
-				printf("--------3.3--------\n");
 				if(strcmp(sub_str, "http") == 0) {
-					if (strlen(found) > MAX_URL_LENGTH) {
-						continue;
+					if(is_duplicate(urls, *total_urls, found) == 1) {
+						red(found);
+					} else {
+						yellow(found);
+						if (strlen(found) > MAX_URL_LENGTH) {
+							continue;
+						}
+						strcpy(urls[*total_urls].address, found);
+						strcpy(urls[*total_urls].address, found);
+						urls[*total_urls].scanned = 0;
+						add_url(db, zErrMsg, found, 0);
+						(*total_urls)++;
 					}
-					printf("--------3.4--------\n");
-					all_results[j].address = malloc(sizeof(char) * (strlen(found) + 1));
-					printf("--------3.5--------\n");
-					strcpy(all_results[j].address, found);
-					printf("--------3.5--------\n");
-					j++;
 				}
 			}
 		}
-	}
-	return j;
-}
-
-void add_item(sqlite3 *db, char *zErrMsg, URL *urls, int *total_urls, Result the_result) {
-	int response  = sql_duplicate(db, zErrMsg, the_result.address);
-	if (response == 1) {
-		red(the_result.address);
-	} else {
-		printf("Address size: %lu\n", sizeof(the_result.address));
-		yellow(the_result.address);
-		urls[*total_urls].address = malloc(sizeof(char) * (strlen(the_result.address) + 1));
-		strcpy(urls[*total_urls].address, the_result.address);
-		urls[*total_urls].scanned = 0;
-		add_url(db, zErrMsg, the_result.address, 0);
-		(*total_urls)++;
 	}
 }
 
@@ -92,11 +85,9 @@ void getData(sqlite3 *db, char *zErrMsg, URL *all_urls, int *total_urls) {
 
 	(*total_urls) = retrieve_urls(db, zErrMsg, all_urls);
 	for (i = 0; i < *total_urls; i++) {
-		printf("%s\n", all_urls[i].address);
 	}
 	printf("Total URLS at start: %i\n", (*total_urls));
 	if(total_urls == 0) {
-		all_urls[0].address = malloc(sizeof(char) * 25);
 		strcpy(all_urls[0].address, "https://www.example.com");
 		all_urls[0].scanned = 0;
 		add_url(db, zErrMsg, all_urls[0].address, 1);
@@ -108,11 +99,9 @@ int main() {
 	MemoryStruct * html;
 	sqlite3 *db = 0;
 	URL *all_urls = malloc(sizeof(URL));
-	Result *all_results = malloc(sizeof(Result));
-	int results_number;
 	int response;
 	char *zErrMsg = 0;
-	int total_urls;
+	int total_urls = 0;
 	int i;
 
 	signal(SIGINT, intHandler);
@@ -127,13 +116,9 @@ int main() {
 		sqlite3_free(zErrMsg);
 	}
 
-	(total_urls) = retrieve_urls(db, zErrMsg, all_urls);
-	for (i = 0; i < total_urls; i++) {
-		printf("%s\n", all_urls[i].address);
-	}
+	total_urls = retrieve_urls(db, zErrMsg, all_urls);
 	printf("Total URLS at start: %i\n", total_urls);
 	if(total_urls == 0) {
-		all_urls[0].address = malloc(sizeof(char) * 25);
 		strcpy(all_urls[0].address, "https://www.example.com");
 		all_urls[0].scanned = 0;
 		add_url(db, zErrMsg, all_urls[0].address, 1);
@@ -146,23 +131,14 @@ int main() {
 			break;
 		}
 		if (all_urls[i].scanned == 0) {
-			printf("--------1--------\n");
 			cyan(all_urls[i].address);
-			printf("--------2--------\n");
 			html = get_url(all_urls[i].address);
-			printf("--------3--------\n");
-			results_number = find_all(html->memory, "href=", all_results);
-			printf("--------4--------\n");
-			for (i = 0; i < results_number; i++) {
-				add_item(db, zErrMsg, all_urls, &total_urls, all_results[i]);
-			}
-			printf("--------5--------\n");
+			find_all(html->memory, "href=", all_urls, &total_urls, db, zErrMsg);
 			all_urls[i].scanned = 1;
-			printf("--------6--------\n");
+			white(all_urls[i].address);
+			update_url(db, zErrMsg, all_urls[i].address);
 			green(all_urls[i].address);
-			printf("--------7--------\n");
 			free(html);
-			printf("--------8--------\n");
 			printf("URLs found: %i\tURLs scanned: %i\n", total_urls, i);
 		}
 	}

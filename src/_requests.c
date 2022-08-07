@@ -8,26 +8,26 @@
 
 
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-	  size_t realsize = size * nmemb;
-	    MemoryStruct *mem = (MemoryStruct *)userp;
+	size_t realsize = size * nmemb;
+	MemoryStruct *mem = (MemoryStruct *)userp;
 
-	      char *ptr = realloc(mem->memory, mem->size + realsize + 1);
-	        if(!ptr) {
-	        	    /* out of memory! */
-	        	    printf("not enough memory (realloc returned NULL)\n");
-	        	        return 0;
-	        	          }
+	char *ptr = realloc(mem->memory, mem->size + realsize + 1);
+	if(!ptr) {
+		printf("not enough memory (realloc returned NULL)\n");
+		return 0;
+}
 
-	          mem->memory = ptr;
-	            memcpy(&(mem->memory[mem->size]), contents, realsize);
-	              mem->size += realsize;
-	                mem->memory[mem->size] = 0;
+	mem->memory = ptr;
+	memcpy(&(mem->memory[mem->size]), contents, realsize);
+	mem->size += realsize;
+	mem->memory[mem->size] = 0;
 
-	                  return realsize;
+	return realsize;
 }
 
 
-MemoryStruct * get_url(char url[1000]) {
+// TODO: make this a pointer
+MemoryStruct * get_url(char url[2048]) {
 
 	CURL *curl;
 	CURLcode res;
@@ -55,5 +55,4 @@ MemoryStruct * get_url(char url[1000]) {
 
 	}
 	return chunk;
-
 }

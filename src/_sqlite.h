@@ -4,7 +4,7 @@
 
 typedef struct url {
 	int id;
-	char *address;
+	char address[MAX_URL_LENGTH];
 	int scanned;
 } URL;
 

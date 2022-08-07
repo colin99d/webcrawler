@@ -70,17 +70,16 @@ int add_url(sqlite3 *db, char *zErrMsg, char *url, int first) {
 
 
 int sql_duplicate(sqlite3 *db, char *zErrMsg, char* str) {
-	printf("%s\n", str);
 	sqlite3_stmt * statement;
 	int response;
-	char query[2100];
-	snprintf(query, 2100, "SELECT id FROM url WHERE address IS '%s';", str);
-	response = sqlite3_prepare_v2(db, query, strlen(query), &statement, NULL);
+	char query[2100] = "SELECT id FROM url WHERE address IS '";
+	strncat(query, str, 2048);
+	strncat(query, "';", 3);
+	response = sqlite3_prepare_v2(db, query, strlen(query) + 1, &statement, NULL);
 	if(response != SQLITE_OK) {
 		sqlite3_close(db);
 		printf("SQL DUPLICATE: %s\n", sqlite3_errmsg(db));
 		sqlite3_finalize(statement);
-		exit(1);
 		return -1;
 	}
 	while (sqlite3_step(statement) == SQLITE_ROW) {	
@@ -93,9 +92,10 @@ int sql_duplicate(sqlite3 *db, char *zErrMsg, char* str) {
 
 
 int update_url(sqlite3 * db, char *zErrMsg, char *url) {
-	char complete_str[2200];
-	snprintf(complete_str, 2200,  "UPDATE url SET scanned = 1 WHERE address IS '%s';", url);
-	return sqlite3_exec(db, complete_str, callback, 0, &zErrMsg);
+	char query[2200] = "UPDATE url SET scanned = 1 WHERE address IS '";
+	strncat(query, url, 2048);
+	strncat(query, "';", 3);
+	return sqlite3_exec(db, query, 0, 0, &zErrMsg);
 		
 }
 
@@ -104,7 +104,6 @@ int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
 	char query[] =  "SELECT id, address, scanned FROM url;";
 	int response;
 	int i = 0;
-	char temp_address[2048];
 
 	response = sqlite3_prepare_v2(db, query, strlen(query), &statement, NULL);
 	if(response != SQLITE_OK) {
@@ -114,29 +113,25 @@ int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
 		return -1;
 	}
 	while (sqlite3_step(statement) == SQLITE_ROW) {	
-		purl[i].id = sqlite3_column_int(statement, 0);
-		strcpy(temp_address, (char*)sqlite3_column_text(statement, 1));
-		purl[i].address = malloc(sizeof(char) * (strlen(temp_address) + 1));
-		strcpy(purl[i].address, temp_address);
-		purl[i].scanned = sqlite3_column_int(statement, 2);
+		for(int i = 0; i < sqlite3_column_count(statement); ++i) {
+			if(sqlite3_column_type(statement, i) != SQLITE_NULL) {
+					switch(i) {
+						case 0:
+							purl[i].id = sqlite3_column_int(statement, i);
+							break;
+
+						case 1:
+							strcpy(purl[i].address, (const char*) sqlite3_column_text(statement, i));
+							break;
+
+						case 2:
+							purl[i].scanned = sqlite3_column_int(statement, i);
+							break;
+					}
+				}
+			}
 		i++;
 	}
 	sqlite3_finalize(statement);
 	return i;
 }
-/*
-int main(void) {
-	URL *all_urls = malloc(sizeof(URL));
-	sqlite3 *db = 0;
-	char *zErrMsg = 0;
-	int i;
-	
-	sqlite3_open_v2("urls.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "unix");
-	create_table(db, zErrMsg);
-	retrieve_urls(db, zErrMsg, all_urls);
-	for(i=0; i<100000; i++) {
-		sql_duplicate(db, zErrMsg, "testsadwqdqecbqwhifbwqdnbqwidbiqwbdncqwejbceihwfghh2io");
-		printf("We checked\n");
-	}
-}
-*/

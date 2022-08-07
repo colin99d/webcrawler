@@ -9,8 +9,8 @@ char* substr(const char *src, int m, int n) {
 
 	for (int i = m; i < n && (*(src + i) != '\0'); i++)
 	{
-			*dest = *(src + i);
-			dest++;
+		*dest = *(src + i);
+		dest++;
 	}
 
 	*dest = '\0';
@@ -41,4 +41,17 @@ char in_array(char ** array, char * string) {
 		array++;
 	}
 	return 0;
+}
+
+
+void rand_str(char *dest, size_t length) {
+    char charset[] = "0123456789"
+                     "abcdefghijklmnopqrstuvwxyz"
+                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    while (length-- > 0) {
+        size_t index = (double) rand() / RAND_MAX * (sizeof charset - 1);
+        *dest++ = charset[index];
+    }
+    *dest = '\0';
 }
