@@ -19,15 +19,14 @@ static volatile int keepRunning = 1;
 
 
 int is_duplicate(URL * urls, int total_urls, char *string) {
-		int i;
+	int i;
 
-			for(i = 0; i < total_urls; i++) {
-
-						if(strcmp(string, urls[i].address) == 0) {
-										return 1;
-												}
-							}
-				return 0;
+	for(i = 0; i < total_urls; i++) {
+		if(strcmp(string, urls[i].address) == 0) {
+			return 1;
+		}
+	}
+		return 0;
 }
 
 void find_all(char *string, char sub[10], URL * urls, int * total_urls, sqlite3 *db, char *zErrMsg) {
@@ -36,7 +35,6 @@ void find_all(char *string, char sub[10], URL * urls, int * total_urls, sqlite3 
 	char *found;
 	int end;
 	int str_len;
-
 
 	str_len = strlen(string);
 	for(i = 0; i < str_len; i++) {
@@ -76,7 +74,6 @@ void intHandler(int dummy) {
 
 void getData(sqlite3 *db, char *zErrMsg, URL *all_urls, int *total_urls) {
 	int response;
-	int i;
 	response = create_table(db, zErrMsg);
 	if(response!=SQLITE_OK){
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -84,10 +81,9 @@ void getData(sqlite3 *db, char *zErrMsg, URL *all_urls, int *total_urls) {
 	}
 
 	(*total_urls) = retrieve_urls(db, zErrMsg, all_urls);
-	for (i = 0; i < *total_urls; i++) {
-	}
 	printf("Total URLS at start: %i\n", (*total_urls));
-	if(total_urls == 0) {
+	printf("Address: %s\n", all_urls[0].address);
+	if(*total_urls == 0) {
 		strcpy(all_urls[0].address, "https://www.example.com");
 		all_urls[0].scanned = 0;
 		add_url(db, zErrMsg, all_urls[0].address, 1);
@@ -109,22 +105,9 @@ int main() {
 	if(response) {
 		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
 		sqlite3_close_v2(db);
+		exit(1);
 	}
-	response = create_table(db, zErrMsg);
-	if(response!=SQLITE_OK){
-		fprintf(stderr, "SQL error: %s\n", zErrMsg);
-		sqlite3_free(zErrMsg);
-	}
-
-	total_urls = retrieve_urls(db, zErrMsg, all_urls);
-	printf("Total URLS at start: %i\n", total_urls);
-	if(total_urls == 0) {
-		strcpy(all_urls[0].address, "https://www.example.com");
-		all_urls[0].scanned = 0;
-		add_url(db, zErrMsg, all_urls[0].address, 1);
-		total_urls++;
-	}
-	// getData(db, zErrMsg, all_urls, &total_urls);
+	getData(db, zErrMsg, all_urls, &total_urls);
 
 	for(i = 0; i < total_urls; i++){
 		if (keepRunning == 0) {

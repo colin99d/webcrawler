@@ -104,6 +104,7 @@ int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
 	char query[] =  "SELECT id, address, scanned FROM url;";
 	int response;
 	int i = 0;
+	int j;
 
 	response = sqlite3_prepare_v2(db, query, strlen(query), &statement, NULL);
 	if(response != SQLITE_OK) {
@@ -113,19 +114,19 @@ int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
 		return -1;
 	}
 	while (sqlite3_step(statement) == SQLITE_ROW) {	
-		for(int i = 0; i < sqlite3_column_count(statement); ++i) {
-			if(sqlite3_column_type(statement, i) != SQLITE_NULL) {
-					switch(i) {
+		for(j = 0; j < sqlite3_column_count(statement); ++j) {
+			if(sqlite3_column_type(statement, j) != SQLITE_NULL) {
+					switch(j) {
 						case 0:
-							purl[i].id = sqlite3_column_int(statement, i);
+							purl[i].id = sqlite3_column_int(statement, j);
 							break;
 
 						case 1:
-							strcpy(purl[i].address, (const char*) sqlite3_column_text(statement, i));
+							strcpy(purl[i].address, (const char*) sqlite3_column_text(statement, j));
 							break;
 
 						case 2:
-							purl[i].scanned = sqlite3_column_int(statement, i);
+							purl[i].scanned = sqlite3_column_int(statement, j);
 							break;
 					}
 				}
