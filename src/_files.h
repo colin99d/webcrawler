@@ -3,8 +3,8 @@
 #define MAX_URL_LENGTH 2048
 
 struct URL {
-	char url[MAX_URL_LENGTH];
-	int scanned;
+  char url[MAX_URL_LENGTH];
+  int scanned;
 };
 
 void write_file(int total_urls, struct URL *urls);
