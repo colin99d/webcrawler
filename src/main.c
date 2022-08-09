@@ -9,7 +9,6 @@
 
 /*
 TODO: Make the url save more memory efficient (don't default to 2048 characters)
-TODO: Swtich from .dat to sqlite
 TODO: increase the amount of information stored (linked list?)
 TODO: take arguments for starting url
 TODO: add logs
@@ -35,6 +34,7 @@ void find_all(char *string, char sub[10], URL * urls, int * total_urls, sqlite3 
 	char *found;
 	int end;
 	int str_len;
+	int dup_val;
 
 	str_len = strlen(string);
 	for(i = 0; i < str_len; i++) {
@@ -48,9 +48,10 @@ void find_all(char *string, char sub[10], URL * urls, int * total_urls, sqlite3 
 				found = substr(string, i+6, end);
 				sub_str = substr(string, i+6, i+10)	;
 				if(strcmp(sub_str, "http") == 0) {
-					if(is_duplicate(urls, *total_urls, found) == 1) {
+					dup_val = sql_duplicate(db, zErrMsg, found);
+					if(dup_val == 1) {
 						red(found);
-					} else {
+					} else if (dup_val == 0){
 						yellow(found);
 						if (strlen(found) > MAX_URL_LENGTH) {
 							continue;
@@ -60,6 +61,8 @@ void find_all(char *string, char sub[10], URL * urls, int * total_urls, sqlite3 
 						urls[*total_urls].scanned = 0;
 						add_url(db, zErrMsg, found, 0);
 						(*total_urls)++;
+					} else {
+						purple("Error processing url");
 					}
 				}
 			}
@@ -99,6 +102,7 @@ int main() {
 	char *zErrMsg = 0;
 	int total_urls = 0;
 	int i;
+	int scan_count = 0;
 
 	signal(SIGINT, intHandler);
 	response = sqlite3_open_v2("urls.db", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "unix");
@@ -118,11 +122,11 @@ int main() {
 			html = get_url(all_urls[i].address);
 			find_all(html->memory, "href=", all_urls, &total_urls, db, zErrMsg);
 			all_urls[i].scanned = 1;
-			white(all_urls[i].address);
 			update_url(db, zErrMsg, all_urls[i].address);
 			green(all_urls[i].address);
 			free(html);
-			printf("URLs found: %i\tURLs scanned: %i\n", total_urls, i);
+			scan_count++;
+			printf("URLs found: %i\tURLs scanned: %i\n", total_urls, scan_count);
 		}
 	}
 	sqlite3_close_v2(db);

@@ -35,7 +35,6 @@ int sql_table_duplicate(sqlite3 *db, char *zErrMsg, char *table) {
 		sqlite3_finalize(statement);
 		return 1;
 	}
-
 	sqlite3_finalize(statement);
 	return 0;
 }
@@ -58,6 +57,9 @@ int drop_table(sqlite3 *db, char *zErrMsg) {
 int add_url(sqlite3 *db, char *zErrMsg, char *url, int first) {
 	char id_str[30];
 	char complete_str[2200];
+	if (strlen(url) > MAX_URL_LENGTH) {
+		return -1;
+	}
 	if (first == 1){
 		strcpy(id_str, "1");	
 	} else {
@@ -65,7 +67,7 @@ int add_url(sqlite3 *db, char *zErrMsg, char *url, int first) {
 	}
 	snprintf(complete_str, 2200,  "INSERT INTO url VALUES(%s,'%s', 0);", id_str, url);
 
-	return sqlite3_exec(db, complete_str, callback, 0, &zErrMsg);
+	return sqlite3_exec(db, complete_str, 0, 0, &zErrMsg);
 }
 
 
@@ -96,7 +98,6 @@ int update_url(sqlite3 * db, char *zErrMsg, char *url) {
 	strncat(query, url, 2048);
 	strncat(query, "';", 3);
 	return sqlite3_exec(db, query, 0, 0, &zErrMsg);
-		
 }
 
 int retrieve_urls(sqlite3 * db, char *zErrMsg, URL * purl) {
